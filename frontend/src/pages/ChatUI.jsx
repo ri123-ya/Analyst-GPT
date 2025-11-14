@@ -166,7 +166,7 @@ const ChatPage = () => {
             </div>
             <div>
               <h3 className="font-semibold text-gray-800">
-                Document Assistant
+                Riya
               </h3>
             </div>
           </div>
