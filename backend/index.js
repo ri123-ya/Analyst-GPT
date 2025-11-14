@@ -9,3 +9,8 @@ app.get("/health",(req,res)=>{
     res.json({message:"Server is healthy"});
 })
 
+
+app.listen(process.env.PORT, ()=>{
+    console.log(`Server is running on port : ${process.env.PORT}`);
+})
+
