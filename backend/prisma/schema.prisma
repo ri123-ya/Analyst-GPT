@@ -18,7 +18,14 @@ model User {
   id            String @id @default(auto()) @map("_id") @db.ObjectId
   email         String @unique
   password      String
+  company       String
   parentCompany String
+  userType      UserType
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+enum UserType {
+  Admin
+  User
 }
