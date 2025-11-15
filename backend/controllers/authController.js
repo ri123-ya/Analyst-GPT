@@ -27,7 +27,7 @@ export const registerUser = async(req,res)=>{
 }
 
 export const registerAdmin = async(req,res)=>{
-    const { email, password,company, parentCompany } = req.body;
+    const { email, password, parentCompany } = req.body;
     try {
         
         const hashedPassword = bcrypt.hashSync(password, 10);
@@ -37,9 +37,8 @@ export const registerAdmin = async(req,res)=>{
             data:{
                 email,
                 password: hashedPassword,
-                company,
                 parentCompany,
-                userType: "User",
+                userType: "Admin",
             }
         })
 
