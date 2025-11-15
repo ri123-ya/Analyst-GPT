@@ -18,9 +18,10 @@ model User {
   id            String @id @default(auto()) @map("_id") @db.ObjectId
   email         String @unique
   password      String
-  company       String
+  company       String? 
   parentCompany String
   userType      UserType
+  fileUploads   FileUpload[] 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -32,9 +33,10 @@ enum UserType {
 
 model FileUpload {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   email         String
-  company       String
+  company       String?
   parentCompany String
   fileUrl       String
   uploadedAt    DateTime @default(now())
