@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
  
-export const registerChild = async(req,res)=>{
+export const registerUser = async(req,res)=>{
     const { email, password,company, parentCompany } = req.body;
     try {
         
