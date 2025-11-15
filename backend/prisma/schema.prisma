@@ -29,3 +29,13 @@ enum UserType {
   Admin
   User
 }
+
+model FileUpload {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String
+  email         String
+  company       String
+  parentCompany String
+  fileUrl       String
+  uploadedAt    DateTime @default(now())
+}
