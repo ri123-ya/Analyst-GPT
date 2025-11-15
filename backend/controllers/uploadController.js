@@ -3,7 +3,9 @@ import { supabase } from "../lib/supabaseClient.js";
 
 export const fileUpload = async (req, res) => {
   try {
-    const { userId, email, company, parentCompany } = req.body;
+
+    const userId = req.user.id;  // FIXED
+    const { email, company, parentCompany } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -11,7 +13,7 @@ export const fileUpload = async (req, res) => {
 
     const fileName = `${Date.now()}-${req.file.originalname}`;
 
-    // Upload to Supabase (use the real bucket name)
+    // Upload to Supabase
     const { data, error } = await supabase.storage
       .from("balance-sheet")
       .upload(fileName, req.file.buffer, {
@@ -19,21 +21,17 @@ export const fileUpload = async (req, res) => {
       });
 
     if (error) {
-      console.log("Upload Error:", error);
       return res.status(500).json({ error: "Upload failed" });
     }
 
-    // Generate public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage
-      .from("balance-sheet")
-      .getPublicUrl(fileName);
+    // Public URL
+    const { data: { publicUrl } } =
+      supabase.storage.from("balance-sheet").getPublicUrl(fileName);
 
-    // Save metadata to MongoDB
+    // Save metadata to Prisma
     const saved = await prisma.fileUpload.create({
       data: {
-        userId,
+        userId: userId,   // FIXED
         email,
         company,
         parentCompany,
@@ -50,5 +48,22 @@ export const fileUpload = async (req, res) => {
   } catch (err) {
     console.log("ERROR:", err);
     res.status(500).json({ error: "Something went wrong" });
+  }
+};
+
+
+export const getUserFiles = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    const files = await prisma.fileUpload.findMany({
+      where: { userId: id },
+      orderBy: { uploadedAt: "desc" },
+    });
+
+    res.status(200).json(files);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to fetch files" });
   }
 };
