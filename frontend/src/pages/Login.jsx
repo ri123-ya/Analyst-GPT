@@ -7,6 +7,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [parentCompany, setParentCompany] = useState("");
+  const [company, setCompany] = useState("");
+
 
   const navigateTo = useNavigate();
 
@@ -39,6 +41,13 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full text-xl md:text-2xl px-10 py-3 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          <input
+            type="text"
+            placeholder="Your Company"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            className="w-full text-xl md:text-2xl px-10 py-3 rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition placeholder:text-gray-400"
           />
 
           {/* Parent Company with Chevron */}
