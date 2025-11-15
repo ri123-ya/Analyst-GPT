@@ -15,7 +15,7 @@ export const registerUser = async(req,res)=>{
                 password: hashedPassword,
                 company,
                 parentCompany,
-                userType: "User",
+                userType: "Admin",
             }
         })
 
@@ -26,6 +26,29 @@ export const registerUser = async(req,res)=>{
   }
 }
 
+export const registerAdmin = async(req,res)=>{
+    const { email, password,company, parentCompany } = req.body;
+    try {
+        
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        console.log(hashedPassword);
+
+        const newUser = await prisma.user.create({
+            data:{
+                email,
+                password: hashedPassword,
+                company,
+                parentCompany,
+                userType: "User",
+            }
+        })
+
+    res.status(201).json({ message: "Admin created successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to create Admin!" });
+  }
+}
 
 export const login = async (req, res) => {
   const { email, password ,company, parentCompany , userType} = req.body;
