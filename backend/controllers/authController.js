@@ -2,8 +2,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma.js";
  
-export const register = async(req,res)=>{
-    const { email, password, parentCompany } = req.body;
+export const registerChild = async(req,res)=>{
+    const { email, password,company, parentCompany } = req.body;
     try {
         
         const hashedPassword = bcrypt.hashSync(password, 10);
@@ -13,7 +13,9 @@ export const register = async(req,res)=>{
             data:{
                 email,
                 password: hashedPassword,
+                company,
                 parentCompany,
+                userType: "User",
             }
         })
 
@@ -26,7 +28,7 @@ export const register = async(req,res)=>{
 
 
 export const login = async (req, res) => {
-  const { email, password , parentCompany} = req.body;
+  const { email, password ,company, parentCompany , userType} = req.body;
 
   try {
     // CHECK IF THE USER EXISTS
@@ -44,9 +46,17 @@ export const login = async (req, res) => {
     if (!isPasswordValid)
       return res.status(400).json({ message: "Invalid Credentials!" });
 
+    if (user.company !== company) {
+      return res.status(401).json({ message: "Incorrect company selected" });
+    }
+
      // Validate selected parentCompany
     if (user.parentCompany !== parentCompany) {
-      return res.status(401).json({ message: "Incorrect company selected" });
+      return res.status(401).json({ message: "Incorrect Parent company selected" });
+    }
+
+    if(user.userType !== userType){
+        return res.status(401).json({message: "Not authenticated "});
     }
 
     // GENERATE COOKIE TOKEN AND SEND TO THE USER
@@ -57,7 +67,9 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       {
         id: user.id,
-        isAdmin: false,
+        company: user.company,         
+        parentCompany: user.parentCompany,
+        userType: user.userType,
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: age }
