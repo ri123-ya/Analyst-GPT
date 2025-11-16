@@ -23,7 +23,7 @@ const Login = () => {
           Sign In
         </h2>
         <p className="text-lg md:text-xl text-gray-600">
-          Please Login To Continue
+          Only Admins can login
         </p>
 
         <form onSubmit={handleLogin} className="space-y-8 mt-8">

@@ -23,7 +23,7 @@ const Register = () => {
           Sign Up
         </h2>
         <p className="text-lg md:text-xl text-gray-600">
-          Please Sign Up To Continue
+          Only for Admins 
         </p>
 
         <form onSubmit={handleRegistration} className="mt-10 space-y-8">
