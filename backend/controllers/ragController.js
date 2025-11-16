@@ -51,13 +51,30 @@ export async function indexTheDocument(filePath, metadata) {
       parentCompany,
     },
   }));
-  console.log("Chunks : ", chunks);
-  
+//   console.log("Chunks : ", chunks);
+
   // Initialize embedding model
-  console.log("🔢 Initializing embeddings...");
+  console.log("Initializing embeddings...");
   const embeddingModel = new GoogleGenerativeAIEmbeddings({
     modelName: "text-embedding-004",
   });
 
-  
+  // Store in Vector DB
+    const vectorStore = await QdrantVectorStore.fromDocuments(
+      chunks,
+      embeddingModel,
+      {
+        url: process.env.QDRANT_URL,
+        apiKey: process.env.QDRANT_API_KEY,
+        collectionName: process.env.COLLECTION_NAME,
+      }
+    );
+
+    console.log(`Stored ${chunks.length} vectors for PDF ${pdfId}`);
+
+    return {
+      message: "Embedding completed",
+      vectors: chunks.length,
+      collection: process.env.COLLECTION_NAME,
+    };
 }
