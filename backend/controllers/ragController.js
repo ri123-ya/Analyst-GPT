@@ -38,20 +38,26 @@ export async function indexTheDocument(filePath, metadata) {
   let chunks = await textsplitter.splitDocuments(docs);
 
   console.log(`Created ${chunks.length} chunks`);
-  
+
   // Attach metadata to each chunk
   chunks = chunks.map((chunk) => ({
     ...chunk,
     metadata: {
       ...chunk.metadata,
       userId,
-      pdfId, 
+      pdfId,
       email,
       company,
       parentCompany,
     },
   }));
   console.log("Chunks : ", chunks);
+  
+  // Initialize embedding model
+  console.log("🔢 Initializing embeddings...");
+  const embeddingModel = new GoogleGenerativeAIEmbeddings({
+    modelName: "text-embedding-004",
+  });
 
-
+  
 }
