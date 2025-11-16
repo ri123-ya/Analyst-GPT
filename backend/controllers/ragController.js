@@ -6,16 +6,66 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-/**
- * filePath = physical path of uploaded PDF (local temp file)
- * metadata = {
- *   userId,
- *   pdfId,
- *   email,
- *   company,
- *   parentCompany
- * }
- */
+function detectCompanyRegex(text) {
+  const lower = text.toLowerCase();
+
+  // --- JIO / DIGITAL SERVICES ---
+  if (
+    /(jio\b|jio fiber|jiofiber|jio cinema|jio platforms|reliance jio|jio 5g|jio airfiber)/i.test(
+      text
+    )
+  ) {
+    return "Jio";
+  }
+
+  // --- RELIANCE RETAIL ---
+  if (
+    /(reliance retail|reliance trends|rel\.? retail|smart bazaar|smart point|ajio|jiomart)/i.test(
+      text
+    )
+  ) {
+    return "Reliance Retail";
+  }
+
+  // --- OIL & GAS / ENERGY / RIL CORE ---
+  if (
+    /(oil.?&.?gas|refining|petrochemicals|exploration|production|e&p|fuel retailing|crude|jamnagar|gas marketing)/i.test(
+      text
+    )
+  ) {
+    return "RIL - Energy";
+  }
+
+  // --- FINANCIAL SERVICES ---
+  if (
+    /(financial services|jio financial|ril financial|nbfc|lending|digital finance)/i.test(
+      text
+    )
+  ) {
+    return "RIL - Finance";
+  }
+
+  // --- DIGITAL SERVICES (Non-Jio) ---
+  if (
+    /(digital services|platforms|cloud|ai|data center|enterprise services)/i.test(
+      text
+    )
+  ) {
+    return "RIL - Digital";
+  }
+
+  // --- RELIANCE INDUSTRIES (GENERAL) ---
+  if (
+    /(reliance industries|ril|r\.i\.l|ambani|conglomerate|group overview)/i.test(
+      text
+    )
+  ) {
+    return "RIL";
+  }
+
+  // Fallback default
+  return "RIL";
+}
 
 export async function indexTheDocument(filePath, metadata) {
   const { userId, pdfId, email, company, parentCompany } = metadata;
@@ -40,18 +90,21 @@ export async function indexTheDocument(filePath, metadata) {
   console.log(`Created ${chunks.length} chunks`);
 
   // Attach metadata to each chunk
-  chunks = chunks.map((chunk) => ({
-    ...chunk,
-    metadata: {
-      ...chunk.metadata,
-      userId,
-      pdfId,
-      email,
-      company,
-      parentCompany,
-    },
-  }));
-//   console.log("Chunks : ", chunks);
+  chunks = chunks.map((chunk) => {
+    const detectedCompany = detectCompanyRegex(chunk.pageContent);
+    return {
+      ...chunk,
+      metadata: {
+        ...chunk.metadata,
+        userId,
+        pdfId,
+        email,
+        company: detectedCompany,
+        parentCompany,
+      },
+    };
+  });
+  //   console.log("Chunks : ", chunks);
 
   // Initialize embedding model
   console.log("Initializing embeddings...");
@@ -60,21 +113,21 @@ export async function indexTheDocument(filePath, metadata) {
   });
 
   // Store in Vector DB
-    const vectorStore = await QdrantVectorStore.fromDocuments(
-      chunks,
-      embeddingModel,
-      {
-        url: process.env.QDRANT_URL,
-        apiKey: process.env.QDRANT_API_KEY,
-        collectionName: process.env.COLLECTION_NAME,
-      }
-    );
+  const vectorStore = await QdrantVectorStore.fromDocuments(
+    chunks,
+    embeddingModel,
+    {
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY,
+      collectionName: process.env.COLLECTION_NAME,
+    }
+  );
 
-    console.log(`Stored ${chunks.length} vectors for PDF ${pdfId}`);
+  console.log(`Stored ${chunks.length} vectors for PDF ${pdfId}`);
 
-    return {
-      message: "Embedding completed",
-      vectors: chunks.length,
-      collection: process.env.COLLECTION_NAME,
-    };
+  return {
+    message: "Embedding completed",
+    vectors: chunks.length,
+    collection: process.env.COLLECTION_NAME,
+  };
 }
