@@ -38,6 +38,20 @@ export async function indexTheDocument(filePath, metadata) {
   let chunks = await textsplitter.splitDocuments(docs);
 
   console.log(`Created ${chunks.length} chunks`);
+  
+  // Attach metadata to each chunk
+  chunks = chunks.map((chunk) => ({
+    ...chunk,
+    metadata: {
+      ...chunk.metadata,
+      userId,
+      pdfId, 
+      email,
+      company,
+      parentCompany,
+    },
+  }));
   console.log("Chunks : ", chunks);
+
 
 }
