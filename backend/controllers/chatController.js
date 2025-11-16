@@ -13,7 +13,7 @@ const prisma = new PrismaClient();
 // ---- inside userQuery, after you have the answer --------------------
 export const userQuery = async (req, res) => {
   try {
-    const { message, pdfId, companyName } = req.body;
+    const { message, pdfId, company } = req.body;
     const userId = req.user.id;
 
     if (!message || !pdfId) {
@@ -33,7 +33,7 @@ export const userQuery = async (req, res) => {
       where: {
         userId,
         pdfId,
-        companyName,
+        company,
         parentCompany,
       },
     });
@@ -43,7 +43,7 @@ export const userQuery = async (req, res) => {
         data: {
           userId,
           pdfId,
-          companyName,
+          company,
           parentCompany,
         },
       });
@@ -63,7 +63,7 @@ export const userQuery = async (req, res) => {
       message,
       userId,
       pdfId,
-      companyName
+      company
     );
 
     let answer = "No relevant information found in your uploaded PDF.";
@@ -90,7 +90,7 @@ export const userQuery = async (req, res) => {
 
 
 // FETCH CONTEXT FROM QDRANT
-async function getRelevantChunks(query, userId, pdfId, companyName) {
+async function getRelevantChunks(query, userId, pdfId, company) {
   const embeddings = new GoogleGenerativeAIEmbeddings({
     model: "text-embedding-004",
   });
@@ -106,7 +106,7 @@ async function getRelevantChunks(query, userId, pdfId, companyName) {
     must: [
       { key: "userId", match: { value: userId } },
       { key: "pdfId", match: { value: pdfId } },
-      { key: "companyName", match: { value: companyName } },
+      { key: "company", match: { value: company } },
     ],
   };
 
