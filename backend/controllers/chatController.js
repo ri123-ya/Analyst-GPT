@@ -10,7 +10,6 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const prisma = new PrismaClient();
 
-// ---- inside userQuery, after you have the answer --------------------
 export const userQuery = async (req, res) => {
   try {
     const { message, pdfId, company } = req.body;
@@ -49,7 +48,7 @@ export const userQuery = async (req, res) => {
       });
     }
 
-    // 3. Save the user message
+    // Save the user message
     await prisma.chatMessage.create({
       data: {
         sessionId: session.id,
@@ -58,7 +57,7 @@ export const userQuery = async (req, res) => {
       },
     });
 
-    // 4. retrieve context & call LLM
+    // retrieve context & call LLM
     const context = await getRelevantChunks(
       message,
       userId,
@@ -71,7 +70,7 @@ export const userQuery = async (req, res) => {
       answer = await callLLM(context, message);
     }
 
-    // 5. Save the assistant answer
+    //  Save the assistant answer
     await prisma.chatMessage.create({
       data: {
         sessionId: session.id,
@@ -80,7 +79,6 @@ export const userQuery = async (req, res) => {
       },
     });
 
-    // 6. Respond
     return res.json({ answer });
   } catch (err) {
     console.error("userQuery error:", err);
@@ -89,13 +87,12 @@ export const userQuery = async (req, res) => {
 };
 
 
-// FETCH CONTEXT FROM QDRANT
+// fetch context
 async function getRelevantChunks(query, userId, pdfId, company) {
   const embeddings = new GoogleGenerativeAIEmbeddings({
     model: "text-embedding-004",
   });
 
-  // Connect to existing Qdrant collection
   const qdrant = await QdrantVectorStore.fromExistingCollection(embeddings, {
     url: process.env.QDRANT_URL,
     apiKey: process.env.QDRANT_API_KEY,
@@ -104,21 +101,24 @@ async function getRelevantChunks(query, userId, pdfId, company) {
 
   const filter = {
     must: [
-      { key: "metadata.userId", match: { value: userId } },
-      { key: "metadata.pdfId", match: { value: pdfId } },
-      { key: "metadata.company", match: { value: company } },
+      { key: "userId", match: { value: userId } },
+      { key: "pdfId", match: { value: pdfId } },
+      { key: "company", match: { value: company } },
     ],
   };
 
   try {
-    const results = await qdrant.similaritySearch(query, 5, filter);
+    const results = await qdrant.similaritySearch(query, 5, { filter });
+
     if (!results || results.length === 0) return null;
+
     return results.map((doc) => doc.pageContent).join("\n\n");
   } catch (err) {
     console.error("Qdrant search failed:", err.response?.data || err.message);
     return null;
   }
 }
+
 
 // LLM CALL (Groq)
 async function callLLM(context, query) {
