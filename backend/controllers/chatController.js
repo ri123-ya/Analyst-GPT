@@ -104,19 +104,20 @@ async function getRelevantChunks(query, userId, pdfId, company) {
 
   const filter = {
     must: [
-      { key: "userId", match: { value: userId } },
-      { key: "pdfId", match: { value: pdfId } },
-      { key: "company", match: { value: company } },
+      { key: "metadata.userId", match: { value: userId } },
+      { key: "metadata.pdfId", match: { value: pdfId } },
+      { key: "metadata.company", match: { value: company } },
     ],
   };
 
-  // similaritySearch with filter 
-  const results = await qdrant.similaritySearch(query, 5, { filter });
-
-  if (!results || results.length === 0) return null;
-
-  // Join page content
-  return results.map((doc) => doc.pageContent).join("\n\n");
+  try {
+    const results = await qdrant.similaritySearch(query, 5, filter);
+    if (!results || results.length === 0) return null;
+    return results.map((doc) => doc.pageContent).join("\n\n");
+  } catch (err) {
+    console.error("Qdrant search failed:", err.response?.data || err.message);
+    return null;
+  }
 }
 
 // LLM CALL (Groq)
