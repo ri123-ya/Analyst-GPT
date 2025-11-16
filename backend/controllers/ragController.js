@@ -82,7 +82,7 @@ export async function indexTheDocument(filePath, metadata) {
   const textsplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 700,
     chunkOverlap: 200,
-    separators: ["\n\n", "\n", " ", ""],
+    separators: ["\n\n", "\n", " ", "","."],
   });
 
   let chunks = await textsplitter.splitDocuments(docs);
@@ -104,7 +104,7 @@ export async function indexTheDocument(filePath, metadata) {
       },
     };
   });
-  //   console.log("Chunks : ", chunks);
+    console.log("Chunks : ", chunks);
 
   // Initialize embedding model
   console.log("Initializing embeddings...");
