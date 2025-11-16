@@ -104,7 +104,7 @@ export async function indexTheDocument(filePath, metadata) {
       },
     };
   });
-    console.log("Chunks : ", chunks);
+    // console.log("Chunks : ", chunks);
 
   // Initialize embedding model
   console.log("Initializing embeddings...");
